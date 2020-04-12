@@ -10,7 +10,7 @@ class AlbertCRF(nn.Module):
         super().__init__()
         self.albert = AlbertModel.from_pretrained(
             r"\\wsl$\Ubuntu\home\longred\EETask\prev_trained_model\albert_tiny_zh")
-        self.classifier = nn.Linear(312, config.num_labels)
+        self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.crf = CRF(config.num_labels)
         self.pad_index = config.pad_index
 
@@ -35,8 +35,8 @@ class AlbertCRF(nn.Module):
 
 if __name__ == '__main__':
     from Albert import AlbertConfig
-
-    config = AlbertConfig()
+    from src.util.utils import load_config_from_json
+    config = load_config_from_json(r"\\wsl$\Ubuntu\home\longred\EETask\prev_trained_model\albert_tiny_zh\albert_config.json")
     config.num_labels = 5
     config.pad_index = -1
     model = AlbertCRF(config=config)
