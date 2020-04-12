@@ -1,5 +1,6 @@
 import json
-
+import numpy as np
+import torch
 def load_data(filepath):
     D = []
     with open(filepath,encoding="UTF-8") as f:
@@ -28,5 +29,5 @@ def sequence_padding(inputs, length=None, padding=0):
         x = np.pad(x, pad_width, 'constant', constant_values=padding)
         outputs.append(x)
 
-    return np.array(outputs)
+    return torch.tensor(outputs,dtype=torch.long)
 
