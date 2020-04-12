@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file:$PROJECT_DIR$/../../../../..//$PROJECT_DIR$/.idea/EETask.iml" filepath="$PROJECT_DIR$/.idea/EETask.iml" />
+      <module fileurl="file:$PROJECT_DIR$/../../../../..////wsl$/Ubuntu/home/longred/EETask/.idea/EETask.iml" filepath="wsl$/Ubuntu/../..////wsl$/Ubuntu/home/longred/EETask/.idea/EETask.iml" />
     </modules>
   </component>
 </project>
