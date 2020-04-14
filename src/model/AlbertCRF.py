@@ -1,9 +1,7 @@
 import torch
 import torch.nn as nn
 # from Albert import AlbertModel
-from pytorchcrf import CRF
 from transformers import AlbertModel, AlbertTokenizer,AlbertPreTrainedModel
-from src.util.utils import seq_len_to_mask
 from torch.nn import CrossEntropyLoss
 from src.model.crf import CRF
 

@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/longred/miniconda3/bin/python",
+    "python.pythonPath": "/home/longred/anaconda3/envs/Text/bin/python",
     "python.envFile": "${workspaceFolder}/.env",
     "python.dataScience.jupyterCommandLineArguments": [],
     "python.dataScience.jupyterServerURI": "local"

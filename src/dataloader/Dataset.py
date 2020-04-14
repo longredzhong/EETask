@@ -83,8 +83,7 @@ class EETaskDataloader:
     def get_train_data_loader(self):
         self.traindataset = EETaskDataset(self.config.train_data_path, self.fields, self.tokenizer, self.label2id)
         self.trainloader = BucketIterator(self.traindataset, batch_size=self.config.batch_size,
-                                          sort_key=lambda x: x.seq_len,
-                                          sort=True,
+                                          sort_key=lambda x: x.seq_len,sort=True,
                                           sort_within_batch=True, train=True, shuffle=True)
         return self.trainloader
 
