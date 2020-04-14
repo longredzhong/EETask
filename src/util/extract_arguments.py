@@ -12,10 +12,11 @@ def extract_arguments_crf(net,text, tokenizer, id2label):
     for i, label in enumerate(labels):
         if label not in (0,218,219):#TODO 硬编码  等会改
             arguments.append([[i], id2label[(label)]])
+        # arguments.append([[i], id2label[(label)]])
     mapping[0] = mapping[1]
     mapping[-1] = mapping[-2]
-    print(arguments)
-    print(mapping)
+    # print(arguments)
+    # print(mapping)
     return {
         text[mapping[w[0]][0]:mapping[w[-1]][-1] + 1]: l
         for w, l in arguments

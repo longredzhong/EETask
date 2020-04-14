@@ -53,7 +53,7 @@ AlbertCrfForNer = AlbertCrfForNer.from_pretrained(
 #%%
 train_loader = EE.get_train_data_loader()
 from torch.optim import Adam
-optim = Adam(AlbertCrfForNer.parameters(), lr=0.001)
+optim = Adam(AlbertCrfForNer.parameters(), lr=0.01)
 for i in train_loader:
     AlbertCrfForNer.zero_grad()
     loss, out = AlbertCrfForNer(input_ids=i.input_ids.to(device),
@@ -66,7 +66,8 @@ for i in train_loader:
     loss.backward()
     optim.step()
     print(loss.item())
-
+#%%
+AlbertCrfForNer.save_pretrained("..")
 
 # %%
 AlbertCrfForNer.crf._viterbi_decode(out[1])[1]
@@ -74,4 +75,17 @@ AlbertCrfForNer.crf._viterbi_decode(out[1])[1]
 # %%
 import src.util.extract_arguments as extract_arguments
 a = extract_arguments.extract_arguments_crf(
-    AlbertCrfForNer, "s???????", EE.tokenizer, EE.id2label)
+    AlbertCrfForNer, "通用汽车泰国裁员350人，占员工总数的15%左右", EE.tokenizer, EE.id2label)
+
+a
+
+# %%
+from src.dataloader.utils import load_data
+data = load_data("/home/longred/EETask/data/dev.json")
+# %%
+for text,au in data:
+    print(extract_arguments.extract_arguments_crf(
+        AlbertCrfForNer, text, EE.tokenizer, EE.id2label)
+    )
+
+# %%
