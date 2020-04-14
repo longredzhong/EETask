@@ -18,7 +18,7 @@ import torch
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 from src.dataloader.Dataset import EETaskDataloader
 EE = EETaskDataloader(albert_config)
-train_loader = EE.get_train_data_loader(device)
+train_loader = EE.get_train_data_loader()
 albert_config.num_labels = EE.num_labels
 albert_config.label2id = EE.label2id
 albert_config.id2label = EE.id2label
@@ -72,3 +72,6 @@ for i in train_loader:
 AlbertCrfForNer.crf._viterbi_decode(out[1])[1]
 
 # %%
+import src.util.extract_arguments as extract_arguments
+a = extract_arguments.extract_arguments_crf(
+    AlbertCrfForNer, "s???????", EE.tokenizer, EE.id2label)
