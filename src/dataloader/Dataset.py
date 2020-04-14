@@ -10,8 +10,8 @@ max_length = 512
 def get_data_info(event_schema_path):
     with open(event_schema_path, encoding="UTF-8") as f:
         id2label, label2id, n = {}, {}, 1
-        id2label.update({0:'padding'})
-        label2id.update({'padding':0})
+        id2label.update({0:'[CLS]'})
+        label2id.update({'[CLS]':0})
         for l in f:
             l = json.loads(l)
             for role in l['role_list']:
@@ -21,6 +21,8 @@ def get_data_info(event_schema_path):
                 n += 1
         id2label.update({n:'O'})
         label2id.update({'O':n})
+        id2label.update({n+1: "[SEP]"})
+        label2id.update({"[SEP]": n+1})
         num_labels = len(id2label)
     return num_labels, id2label, label2id
 
@@ -36,8 +38,8 @@ class EETaskDataset(Dataset):
 
             seq_len = len(input_ids)
             labels = [O] * seq_len
-            labels[0] = label2id['padding']
-            labels[-1] = label2id['padding']
+            labels[0] = label2id["[CLS]"]
+            labels[-1] = label2id["[SEP]"]
             attention_mask = [1]*seq_len
             for argument in arguments.items():
                 a_token_ids = tokenizer.encode(argument[0])[0][1:-1]
