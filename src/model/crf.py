@@ -25,7 +25,7 @@ def log_sum_exp_batch(vecs):
     return maxi + recti_
 
 class CRF(nn.Module):
-    def __init__(self,tagset_size,tag_dictionary,device,is_bert=None):
+    def __init__(self,tagset_size,tag_dictionary,is_bert=None):
         super(CRF,self).__init__()
 
         self.START_TAG = "<START>"
@@ -35,19 +35,17 @@ class CRF(nn.Module):
             self.STOP_TAG = "[SEP]"
         self.tag_dictionary = tag_dictionary
         self.tagset_size = tagset_size
-        self.device = device
         self.transitions = torch.randn(tagset_size, tagset_size)
         # self.transitions = torch.zeros(tagset_size, tagset_size)
         self.transitions.detach()[self.tag_dictionary[self.START_TAG], :] = -10000
         self.transitions.detach()[:, self.tag_dictionary[self.STOP_TAG]] = -10000
-        self.transitions = self.transitions.to(device)
         self.transitions = nn.Parameter(self.transitions)
 
     def _viterbi_decode(self, feats):
         backpointers = []
         backscores = []
         scores = []
-        init_vvars = (torch.FloatTensor(1, self.tagset_size).to(self.device).fill_(-10000.0))
+        init_vvars = (torch.FloatTensor(1, self.tagset_size).fill_(-10000.0))
         init_vvars[0][self.tag_dictionary[self.START_TAG]] = 0
         forward_var = init_vvars
 
@@ -131,17 +129,17 @@ class CRF(nn.Module):
         return alpha
 
     def _score_sentence(self, feats, tags, lens_):
-        start = torch.LongTensor([self.tag_dictionary[self.START_TAG]]).to(self.device)
+        start = torch.LongTensor([self.tag_dictionary[self.START_TAG]])
         start = start[None, :].repeat(tags.shape[0], 1)
-        stop = torch.LongTensor([self.tag_dictionary[self.STOP_TAG]]).to(self.device)
+        stop = torch.LongTensor([self.tag_dictionary[self.STOP_TAG]])
         stop = stop[None, :].repeat(tags.shape[0], 1)
         pad_start_tags = torch.cat([start, tags], 1)
         pad_stop_tags = torch.cat([tags, stop], 1)
         for i in range(len(lens_)):
             pad_stop_tags[i, lens_[i] :] = self.tag_dictionary[self.STOP_TAG]
-        score = torch.FloatTensor(feats.shape[0]).to(self.device)
+        score = torch.FloatTensor(feats.shape[0])
         for i in range(feats.shape[0]):
-            r = torch.LongTensor(range(lens_[i])).to(self.device)
+            r = torch.LongTensor(range(lens_[i]))
             score[i] = torch.sum(
                 self.transitions[
                     pad_stop_tags[i, : lens_[i] + 1], pad_start_tags[i, : lens_[i] + 1]
