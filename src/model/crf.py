@@ -28,17 +28,17 @@ class CRF(nn.Module):
     def __init__(self,tagset_size,tag_dictionary,is_bert=None):
         super(CRF,self).__init__()
 
-        self.START_TAG = "<START>"
-        self.STOP_TAG = "<STOP>"
-        if is_bert:
-            self.START_TAG = "[CLS]"
-            self.STOP_TAG = "[SEP]"
+        # self.START_TAG = "<START>"
+        # self.STOP_TAG = "<STOP>"
+        # if is_bert:
+        #     self.START_TAG = "[CLS]"
+        #     self.STOP_TAG = "[SEP]"
         self.tag_dictionary = tag_dictionary
         self.tagset_size = tagset_size
         self.transitions = torch.randn(tagset_size, tagset_size)
         # self.transitions = torch.zeros(tagset_size, tagset_size)
-        self.transitions.detach()[self.tag_dictionary[self.START_TAG], :] = -10000
-        self.transitions.detach()[:, self.tag_dictionary[self.STOP_TAG]] = -10000
+        self.transitions.detach()[0, :] = -10000
+        self.transitions.detach()[:, 0] = -10000
         self.transitions = nn.Parameter(self.transitions)
 
     def _viterbi_decode(self, feats):
@@ -47,7 +47,7 @@ class CRF(nn.Module):
         backscores = []
         scores = []
         init_vvars = (torch.FloatTensor(1, self.tagset_size).to(device).fill_(-10000.0))
-        init_vvars[0][self.tag_dictionary[self.START_TAG]] = 0
+        init_vvars[0][0] = 0
         forward_var = init_vvars
 
         for feat in feats:
@@ -63,10 +63,10 @@ class CRF(nn.Module):
 
         terminal_var = (
                 forward_var
-                + self.transitions[self.tag_dictionary[self.STOP_TAG]]
+                + self.transitions[0]
         )
-        terminal_var.detach()[self.tag_dictionary[self.STOP_TAG]] = -10000.0
-        terminal_var.detach()[self.tag_dictionary[self.START_TAG]] = -10000.0
+        terminal_var.detach()[0] = -10000.0
+        terminal_var.detach()[0] = -10000.0
         best_tag_id = argmax(terminal_var.unsqueeze(0))
         best_path = [best_tag_id]
         for bptrs_t in reversed(backpointers):
@@ -88,14 +88,14 @@ class CRF(nn.Module):
             scores[-1][swap_best_path],
         )
         start = best_path.pop()
-        assert start == self.tag_dictionary[self.START_TAG]
+        assert start == 0
         best_path.reverse()
         return best_scores, best_path, scores
 
     def _forward_alg(self, feats, lens_):
         device = feats.device
         init_alphas = torch.FloatTensor(self.tagset_size).to(device).fill_(-10000.0)
-        init_alphas[self.tag_dictionary[self.START_TAG]] = 0.0
+        init_alphas[0] = 0.0
 
         forward_var = torch.zeros(
             feats.shape[0],
@@ -125,20 +125,20 @@ class CRF(nn.Module):
             cloned[:, i + 1, :] = max_tag_var + agg_
             forward_var = cloned
         forward_var = forward_var[range(forward_var.shape[0]), lens_, :]
-        terminal_var = forward_var + self.transitions[self.tag_dictionary[self.STOP_TAG]][None, :].repeat(forward_var.shape[0], 1)
+        terminal_var = forward_var + self.transitions[0][None, :].repeat(forward_var.shape[0], 1)
         alpha = log_sum_exp_batch(terminal_var)
         return alpha
 
     def _score_sentence(self, feats, tags, lens_):
         device = feats.device
-        start = torch.LongTensor([self.tag_dictionary[self.START_TAG]]).to(device)
+        start = torch.LongTensor([0]).to(device)
         start = start[None, :].repeat(tags.shape[0], 1)
-        stop = torch.LongTensor([self.tag_dictionary[self.STOP_TAG]]).to(device)
+        stop = torch.LongTensor([0]).to(device)
         stop = stop[None, :].repeat(tags.shape[0], 1)
         pad_start_tags = torch.cat([start, tags], 1)
         pad_stop_tags = torch.cat([tags, stop], 1)
         for i in range(len(lens_)):
-            pad_stop_tags[i, lens_[i] :] = self.tag_dictionary[self.STOP_TAG]
+            pad_stop_tags[i, lens_[i] :] = 0
         score = torch.FloatTensor(feats.shape[0]).to(device)
         for i in range(feats.shape[0]):
             r = torch.LongTensor(range(lens_[i])).to(device)

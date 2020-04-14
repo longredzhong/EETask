@@ -8,11 +8,18 @@ def extract_arguments_crf(net,text, tokenizer, id2label):
     token_ids = torch.tensor(token_ids, dtype=torch.long,device=device).unsqueeze(0)
     out = net(token_ids)
     labels = net.crf._viterbi_decode(out[0][0])[1]
-    arguments = []
+    arguments, starting = [], False
     for i, label in enumerate(labels):
-        if label not in (0,218,219):#TODO 硬编码  等会改
-            arguments.append([[i], id2label[(label)]])
-        # arguments.append([[i], id2label[(label)]])
+        if label > 0:
+            if label % 2 == 1:
+                starting = True
+                arguments.append([[i], id2label[(label - 1) // 2]])
+            elif starting:
+                arguments[-1][0].append(i)
+            else:
+                starting = False
+        else:
+            starting = False
     mapping[0] = mapping[1]
     mapping[-1] = mapping[-2]
     # print(arguments)
