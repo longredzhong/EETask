@@ -166,5 +166,3 @@ class CRF(nn.Module):
         gold_score = self._score_sentence(features, tags, lengths)
         score = forward_score - gold_score
         return score.mean()
-
-
