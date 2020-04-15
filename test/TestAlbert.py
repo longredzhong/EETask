@@ -22,7 +22,7 @@ train_loader = EE.get_train_data_loader()
 albert_config.num_labels = EE.num_labels
 albert_config.label2id = EE.label2id
 albert_config.id2label = EE.id2label
-# # %%
+# %%
 # from src.model.AlbertSoftMax import AlbertSoftmaxForNer
 # AlbertSoftmaxForNer = AlbertSoftmaxForNer.from_pretrained(
 #     pretrained_model_name_or_path=albert_config.pretrained_path,
@@ -31,7 +31,7 @@ albert_config.id2label = EE.id2label
 # train_loader = EE.get_train_data_loader()
 # from torch.optim import Adam
 # AlbertSoftmaxForNer = AlbertSoftmaxForNer.to(device)
-# optim = Adam(AlbertSoftmaxForNer.parameters(), lr=1e-5)
+# optim = Adam(AlbertSoftmaxForNer.parameters(), lr=0.01)
 # #%%
 # for i in train_loader:
 #     AlbertSoftmaxForNer.train()
@@ -79,7 +79,7 @@ albert_config.id2label = EE.id2label
 #         loss.backward()
 #         optim.step()
 #         print(loss.item())
-# %%
+#%%
 from src.model.AlbertCRF import AlbertCrfForNer
 AlbertCrfForNer = AlbertCrfForNer.from_pretrained(
     pretrained_model_name_or_path=albert_config.pretrained_path,
@@ -87,14 +87,13 @@ AlbertCrfForNer = AlbertCrfForNer.from_pretrained(
 #%%
 train_loader = EE.get_train_data_loader()
 from torch.optim import Adam
-optim = Adam([{'params': AlbertCrfForNer.bert.parameters()},
-              {'params': AlbertCrfForNer.crf.parameters(), 'lr': 100}
-            ], lr=1e-5)
-# %%
+optim = Adam(AlbertCrfForNer.parameters(), lr=0.01)
+
+#%%
 # from torch.nn import DataParallel
 # AlbertCrfForNer = DataParallel(AlbertCrfForNer,device_ids=[1,0])
-# %%
-# %%
+#%%
+
 for i in train_loader:
     AlbertCrfForNer.train()
     optim.zero_grad()
@@ -108,12 +107,12 @@ for i in train_loader:
     loss.backward()
     optim.step()
     print(loss.item())
-# # %%
-# AlbertCrfForNer.save_pretrained("..")
 #%%
+# AlbertCrfForNer.save_pretrained("..")
+# #%%
 AlbertCrfForNer = AlbertCrfForNer.cpu()
 # %%
-AlbertCrfForNer.crf._viterbi_decode(out[1])[1]
+# AlbertCrfForNer.crf._viterbi_decode(out[1])[1]
 
 # %%
 import src.util.extract_arguments as extract_arguments
