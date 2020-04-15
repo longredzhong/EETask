@@ -10,7 +10,7 @@ def extract_arguments_crf(net,text, tokenizer, id2label):
     labels = net.crf._viterbi_decode(out[0][0])[1]
     arguments, starting = [], False
     for i, label in enumerate(labels):
-        if label > 0:
+        if label > 0 and label < 435:
             if label % 2 == 1:
                 starting = True
                 arguments.append([[i], id2label[(label - 1) // 2]])

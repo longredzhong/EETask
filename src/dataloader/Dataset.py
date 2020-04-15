@@ -18,7 +18,14 @@ def get_data_info(event_schema_path):
                 label2id[key] = n
                 n += 1
         num_labels = len(id2label) * 2 + 1
-    return num_labels, id2label, label2id
+
+        id2label[n] = "[CLS]"
+        label2id["[CLS]"] = n
+
+        id2label[n] = "[SEP]"
+        label2id["[SEP]"] = n
+
+    return num_labels+2, id2label, label2id
 
 
 class EETaskDataset(Dataset):
@@ -31,7 +38,8 @@ class EETaskDataset(Dataset):
 
             seq_len = len(input_ids)
             labels = [0] * seq_len
-
+            labels[0] = label2id["[CLS]"] * 2 + 1
+            labels[-1] = label2id["[SEP]"] * 2 + 2
             attention_mask = [1]*seq_len
             for argument in arguments.items():
                 a_token_ids = tokenizer.encode(argument[0])[0][1:-1]
