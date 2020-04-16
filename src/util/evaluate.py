@@ -1,12 +1,14 @@
 from src.util.utils import lcs
 from tqdm import tqdm
-def evaluate(net, data, extract_arguments):
+
+
+def evaluate(net, data, extract_arguments, tokenizer, id2label):
     net.eval()
     X, Y, Z = 1e-10, 1e-10, 1e-10
     for text, arguments in tqdm(data):
         inv_arguments = {v: k for k, v in arguments.items()}
         pred_arguments = extract_arguments.extract_arguments_crf(
-            net, text, EE.tokenizer, EE.id2label)
+            net, text, tokenizer, id2label)
         pred_inv_arguments = {v: k for k, v in pred_arguments.items()}
         Y += len(pred_inv_arguments)
         Z += len(inv_arguments)
