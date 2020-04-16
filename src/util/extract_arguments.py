@@ -1,4 +1,5 @@
 import torch
+import itertools
 
 def extract_arguments_crf(net,text, tokenizer, id2label):
     device = net.device
@@ -8,18 +9,16 @@ def extract_arguments_crf(net,text, tokenizer, id2label):
     token_ids = torch.tensor(token_ids, dtype=torch.long,device=device).unsqueeze(0)
     out = net(token_ids)
     labels = net.crf._viterbi_decode(out[0][0])[1]
+
     arguments, starting = [], False
-    for i, label in enumerate(labels):
-        if label > 0 and label < 435:
-            if label % 2 == 1:
-                starting = True
-                arguments.append([[i], id2label[(label - 1) // 2]])
-            elif starting:
-                arguments[-1][0].append(i)
-            else:
-                starting = False
-        else:
-            starting = False
+    num_times = [(k, len(list(v))) for k, v in itertools.groupby(labels)]
+
+    s = 0
+    for i in num_times:
+        if i[0]>0 and i[0] < (len(id2label) - 2):
+            arguments.append([list(range(s, s+i[1])),id2label[i[0]]])
+        s += i[1]
+
     mapping[0] = mapping[1]
     mapping[-1] = mapping[-2]
     # print(arguments)
@@ -39,17 +38,12 @@ def extract_arguments_softmax(net,text, tokenizer, id2label):
     labels = torch.max(out[0],2)[1]
     labels = labels.squeeze().tolist()
     arguments, starting = [], False
-    for i, label in enumerate(labels):
-        if label > 0:
-            if label % 2 == 1:
-                starting = True
-                arguments.append([[i], id2label[(label - 1) // 2]])
-            elif starting:
-                arguments[-1][0].append(i)
-            else:
-                starting = False
-        else:
-            starting = False
+    num_times = [(k, len(list(v))) for k, v in itertools.groupby(labels)]
+    s = 0
+    for i in num_times:
+        arguments.append([list(range(s, s+i[1])), id2label[i[0]]])
+        s += i[1]
+
     mapping[0] = mapping[1]
     mapping[-1] = mapping[-2]
     # print(arguments)

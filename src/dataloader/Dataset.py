@@ -4,12 +4,14 @@ from src.util.utils import search
 import json
 from src.util.tokenizers import Tokenizer
 
-max_length = 512
+max_length = 256
 
 
 def get_data_info(event_schema_path):
     with open(event_schema_path, encoding="UTF-8") as f:
-        id2label, label2id, n = {}, {}, 0
+        id2label, label2id, n = {}, {}, 1
+        id2label[0] = "[PAD]"
+        label2id["[PAD]"] = 0
         for l in f:
             l = json.loads(l)
             for role in l['role_list']:
@@ -17,13 +19,15 @@ def get_data_info(event_schema_path):
                 id2label[n] = key
                 label2id[key] = n
                 n += 1
-        num_labels = len(id2label) * 2 + 1
+        num_labels = len(id2label) + 1
 
         id2label[n] = "[CLS]"
         label2id["[CLS]"] = n
 
-        id2label[n] = "[SEP]"
-        label2id["[SEP]"] = n
+        id2label[n+1] = "[SEP]"
+        label2id["[SEP]"] = n+1
+
+        num_labels = len(id2label)
 
     return num_labels+2, id2label, label2id
 
@@ -38,8 +42,8 @@ class EETaskDataset(Dataset):
 
             seq_len = len(input_ids)
             labels = [0] * seq_len
-            labels[0] = label2id["[CLS]"] * 2 + 1
-            labels[-1] = label2id["[SEP]"] * 2 + 2
+            labels[0] = label2id["[CLS]"]
+            labels[-1] = label2id["[SEP]"]
             attention_mask = [1]*seq_len
             for argument in arguments.items():
                 a_token_ids = tokenizer.encode(argument[0])[0][1:-1]
@@ -48,9 +52,9 @@ class EETaskDataset(Dataset):
                 #     for i in range(0, len(a_token_ids)):
                 #         labels[start_index + i] = label2id[argument[1]]
                 if start_index != -1:
-                    labels[start_index] = label2id[argument[1]] * 2+ 1
+                    labels[start_index] = label2id[argument[1]]
                     for i in range(1, len(a_token_ids)):
-                        labels[start_index + i] = label2id[argument[1]] * 2+ 2
+                        labels[start_index + i] = label2id[argument[1]]
 
 
             assert len(input_ids) == len(token_type_ids) == len(

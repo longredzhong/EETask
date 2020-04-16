@@ -88,7 +88,7 @@ class CRF(nn.Module):
             scores[-1][swap_best_path],
         )
         start = best_path.pop()
-        assert start == self.tag_dictionary[self.START_TAG]
+        # assert start == self.tag_dictionary[self.START_TAG]
         best_path.reverse()
         return best_scores, best_path, scores
 
