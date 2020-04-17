@@ -75,7 +75,7 @@ e_t = 0
 while (True):
     r.train()
     t = r.evaluate()
-    if t[0]>best:
+    if t[0]+t[1] + t[2] > best:
         best = t[0]+t[1] +t[2]
         e_t = 0
         torch.save(r.net.state_dict(),
