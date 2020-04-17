@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-
+import json
 from src.util.utils import lcs
 
 
@@ -58,3 +58,27 @@ class Run:
         f1, precision, recall = 2 * X / (Y + Z), X / Y, X / Z
         print("\n {0},  {1},  {2}".format(f1, precision, recall))
         return f1, precision, recall
+
+    def predict_to_file(self, in_file, out_file):
+        """预测结果到文件，方便提交
+        """
+        fw = open(out_file, 'w', encoding='utf-8')
+        with open(in_file) as fr:
+            for l in tqdm(fr):
+                l = json.loads(l)
+                arguments = self.extract_arguments(
+                    self.net, l['text'], self.tokenizer, self.id2label)
+                event_list = []
+                for k, v in arguments.items():
+                    event_list.append({
+                        'event_type': v[0],
+                        'arguments': [{
+                            'role': v[1],
+                            'argument': k
+                        }]
+                    })
+                l['event_list'] = event_list
+                # l.pop('text')
+                l = json.dumps(l, ensure_ascii=False)
+                fw.write(l + '\n')
+        fw.close()
