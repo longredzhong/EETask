@@ -44,8 +44,8 @@ num_warmup_steps = 100
 warmup_proportion = float(num_warmup_steps) / float(num_training_steps)  # 0.1
 # optimizer = AdamW(model.parameters(), lr=lr, correct_bias=False)
 optimizer = AdamW([
-    {'params': model.bert.parameters(),'lr':0.0001},
-    {'params': model.classifier.parameters(),'lr':0.001},
+    {'params': model.bert.parameters(),'lr':0.00001},
+    {'params': model.classifier.parameters(),'lr':0.0001},
     {'params': model.crf.parameters(), 'lr': 0.001}
     ],lr=lr,correct_bias=False)
 scheduler = get_linear_schedule_with_warmup(
@@ -70,25 +70,26 @@ r.train_loader = EE.get_train_data_loader()
 
 #%%
 
-best_f1 = 0
+best = 0
 e_t = 0
 while (True):
     r.train()
     t = r.evaluate()
-    if t[0]>best_f1:
-        best_f1 = t[0]
+    if t[0]>best:
+        best = t[0]+t[1] +t[2]
         e_t = 0
         torch.save(r.net.state_dict(),
                    "/home/longred/EETask/data/BertSoftMaxForNer_small.bin")
-        print("save model {}".format(best_f1))
+        r.predict_to_file("/home/longred/EETask/data/test1.json",
+                          "/home/longred/EETask/data/pred.json")
+        print("save model sum={1},f1:{2},精确度：{3},recall:{4}".format(best,t[0],t[1],t[2]))
     e_t += 1
     if e_t>10:
         break
 
 
 #%%
-r.predict_to_file("/home/longred/EETask/data/test1.json",
-                  "/home/longred/EETask/data/pred.json")
+
 
 
 # %%
