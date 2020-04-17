@@ -66,7 +66,7 @@ class FocalLoss(nn.Module):
 
 
 class LabelSmoothingCrossEntropy(nn.Module):
-    def __init__(self, eps=0.2, reduction='mean', ignore_index=-100):
+    def __init__(self, eps=0.1, reduction='mean', ignore_index=-100):
         super(LabelSmoothingCrossEntropy, self).__init__()
         self.eps = eps
         self.reduction = reduction

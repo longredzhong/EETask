@@ -31,7 +31,7 @@ train_loader = EE.get_train_data_loader()
 config.num_labels = EE.num_labels
 config.label2id = EE.label2id
 data = load_data("/home/longred/EETask/data/dev.json")
-model = BertCrfForNer.from_pretrained(
+model = BertSoftmaxForNer.from_pretrained(
     pretrained_model_name_or_path=config.pretrained_path,
     config=config).to(device)
 #%%
@@ -44,22 +44,22 @@ num_warmup_steps = 100
 warmup_proportion = float(num_warmup_steps) / float(num_training_steps)  # 0.1
 # optimizer = AdamW(model.parameters(), lr=lr, correct_bias=False)
 optimizer = AdamW([
-    {'params': model.bert.parameters(),'lr':0.000001},
-    {'params': model.classifier.parameters(),'lr':0.0001},
-    {'params': model.crf.parameters(), 'lr': 0.001}
+    {'params': model.bert.parameters(),'lr':0.0001},
+    {'params': model.classifier.parameters(),'lr':0.001},
+    # {'params': model.crf.parameters(), 'lr': 0.001}
     ],lr=lr,correct_bias=False)
-# scheduler = get_linear_schedule_with_warmup(
-#     optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps)  # PyTorch scheduler
+scheduler = get_linear_schedule_with_warmup(
+    optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps)  # PyTorch scheduler
 #%%
 r = Run()
 r.device = device
 r.dev_data =data
-r.extract_arguments = extract_arguments_crf
+r.extract_arguments = extract_arguments_softmax
 r.id2label = EE.id2label
 r.label2id = EE.label2id
 r.net = model
 r.optim = optimizer
-# r.scheduler = scheduler
+r.scheduler = scheduler
 r.tokenizer = EE.tokenizer
 r.train_loader = EE.get_train_data_loader()
 #%%
@@ -79,7 +79,7 @@ while (True):
         best_f1 = t[0]
         e_t = 0
         torch.save(r.net.state_dict(),
-                   "/home/longred/EETask/data/BertCRFForNer.bin")
+                   "/home/longred/EETask/data/BertSoftMaxForNer_small.bin")
         print("save model {}".format(best_f1))
     e_t += 1
     if e_t>10:
