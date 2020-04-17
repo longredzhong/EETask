@@ -15,7 +15,7 @@ def extract_arguments_crf(net,text, tokenizer, id2label):
 
     s = 0
     for i in num_times:
-        if i[0]>0 and i[0] < (len(id2label) - 2):
+        if i[0]>0:
             arguments.append([list(range(s, s+i[1])),id2label[i[0]]])
         s += i[1]
 
@@ -41,7 +41,8 @@ def extract_arguments_softmax(net,text, tokenizer, id2label):
     num_times = [(k, len(list(v))) for k, v in itertools.groupby(labels)]
     s = 0
     for i in num_times:
-        arguments.append([list(range(s, s+i[1])), id2label[i[0]]])
+        if i[0]>0:
+            arguments.append([list(range(s, s+i[1])), id2label[i[0]]])
         s += i[1]
 
     mapping[0] = mapping[1]

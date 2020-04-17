@@ -1,10 +1,10 @@
-from torchtext.data import BucketIterator, Dataset, Example, Field
+from torchtext.data import BucketIterator, Dataset, Example, Field, Iterator
 from src.dataloader.utils import load_data
 from src.util.utils import search
 import json
 from src.util.tokenizers import Tokenizer
 
-max_length = 256
+max_length = 128
 
 
 def get_data_info(event_schema_path):
@@ -19,17 +19,10 @@ def get_data_info(event_schema_path):
                 id2label[n] = key
                 label2id[key] = n
                 n += 1
-        num_labels = len(id2label) + 1
-
-        id2label[n] = "[CLS]"
-        label2id["[CLS]"] = n
-
-        id2label[n+1] = "[SEP]"
-        label2id["[SEP]"] = n+1
 
         num_labels = len(id2label)
 
-    return num_labels+2, id2label, label2id
+    return num_labels, id2label, label2id
 
 
 class EETaskDataset(Dataset):
@@ -42,8 +35,7 @@ class EETaskDataset(Dataset):
 
             seq_len = len(input_ids)
             labels = [0] * seq_len
-            labels[0] = label2id["[CLS]"]
-            labels[-1] = label2id["[SEP]"]
+
             attention_mask = [1]*seq_len
             for argument in arguments.items():
                 a_token_ids = tokenizer.encode(argument[0])[0][1:-1]
@@ -86,9 +78,8 @@ class EETaskDataloader:
 
     def get_train_data_loader(self):
         self.traindataset = EETaskDataset(self.config.train_data_path, self.fields, self.tokenizer, self.label2id)
-        self.trainloader = BucketIterator(self.traindataset, batch_size=self.config.batch_size,
-                                          sort_key=lambda x: x.seq_len,sort=True,
-                                          sort_within_batch=True, train=True, shuffle=True)
+        self.trainloader = Iterator(self.traindataset, batch_size=self.config.batch_size,
+                                     train=True, shuffle=True)
         return self.trainloader
 
 #%%
