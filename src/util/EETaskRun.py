@@ -26,7 +26,7 @@ class Run:
         for i in loader:
             self.optim.zero_grad()
             loss, out = self.net(input_ids=i.input_ids.to(device),
-                                 attention_mask=None,
+                                 attention_mask=i.attention_mask.to(device),
                                  token_type_ids=i.token_type_ids.to(device),
                                  position_ids=None,
                                  head_mask=None,

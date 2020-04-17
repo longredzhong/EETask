@@ -25,28 +25,28 @@ config.train_data_path = r"/home/longred/EETask/data/train.json"
 config.batch_size = 32
 config.event_schema_path = r"/home/longred/EETask/data/event_schema.json"
 
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 EE = EETaskDataloader(config)
 train_loader = EE.get_train_data_loader()
 config.num_labels = EE.num_labels
 config.label2id = EE.label2id
 data = load_data("/home/longred/EETask/data/dev.json")
-model = BertSoftmaxForNer.from_pretrained(
+model = BertCrfForNer.from_pretrained(
     pretrained_model_name_or_path=config.pretrained_path,
     config=config).to(device)
 #%%
 # To reproduce BertAdam specific behavior set correct_bias=False
 from transformers import AdamW,get_linear_schedule_with_warmup
-lr = 1e-5
+lr = 1e-3
 max_grad_norm = 1.0
 num_training_steps = 374
 num_warmup_steps = 100
 warmup_proportion = float(num_warmup_steps) / float(num_training_steps)  # 0.1
 # optimizer = AdamW(model.parameters(), lr=lr, correct_bias=False)
 optimizer = AdamW([
-    {'params': model.bert.parameters(),'lr':0.00001},
-    {'params': model.classifier.parameters(),'lr':0.001},
-    # {'params': model.crf.parameters(), 'lr': 0.1}
+    {'params': model.bert.parameters(),'lr':0.000001},
+    {'params': model.classifier.parameters(),'lr':0.0001},
+    {'params': model.crf.parameters(), 'lr': 0.001}
     ],lr=lr,correct_bias=False)
 # scheduler = get_linear_schedule_with_warmup(
 #     optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps)  # PyTorch scheduler
@@ -54,7 +54,7 @@ optimizer = AdamW([
 r = Run()
 r.device = device
 r.dev_data =data
-r.extract_arguments = extract_arguments_softmax
+r.extract_arguments = extract_arguments_crf
 r.id2label = EE.id2label
 r.label2id = EE.label2id
 r.net = model
@@ -69,7 +69,7 @@ r.train_loader = EE.get_train_data_loader()
 #%%
 
 #%%
-r.evaluate()
+
 best_f1 = 0
 e_t = 0
 while (True):
@@ -79,7 +79,7 @@ while (True):
         best_f1 = t[0]
         e_t = 0
         torch.save(r.net.state_dict(),
-                   "/home/longred/EETask/data/BertSoftmaxForNer.bin")
+                   "/home/longred/EETask/data/BertCRFForNer.bin")
         print("save model {}".format(best_f1))
     e_t += 1
     if e_t>10:

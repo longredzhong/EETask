@@ -35,8 +35,7 @@ class EETaskDataset(Dataset):
 
             seq_len = len(input_ids)
             labels = [0] * seq_len
-
-            attention_mask = [1]*seq_len
+            attention_mask = [1] * seq_len
             for argument in arguments.items():
                 a_token_ids = tokenizer.encode(argument[0])[0][1:-1]
                 start_index = search(a_token_ids, input_ids)
@@ -49,8 +48,7 @@ class EETaskDataset(Dataset):
                         labels[start_index + i] = label2id[argument[1]]
 
 
-            assert len(input_ids) == len(token_type_ids) == len(
-                attention_mask) == len(labels) == seq_len
+            assert len(input_ids) == len(token_type_ids) == len(labels) == seq_len
 
             examples.append(Example.fromlist([
                 input_ids, token_type_ids, attention_mask, labels, seq_len
@@ -61,8 +59,6 @@ class EETaskDataset(Dataset):
 class EETaskDataloader:
     def __init__(self, config):
         self.config = config
-
-
         self.tokenizer = Tokenizer(self.config.vocab_path)
 
         self.num_labels, self.id2label, self.label2id = get_data_info(self.config.event_schema_path)

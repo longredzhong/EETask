@@ -8,8 +8,9 @@ def extract_arguments_crf(net,text, tokenizer, id2label):
     token_ids = tokenizer.tokens_to_ids(tokens)
     token_ids = torch.tensor(token_ids, dtype=torch.long,device=device).unsqueeze(0)
     out = net(token_ids)
-    labels = net.crf._viterbi_decode(out[0][0])[1]
 
+    labels = out[0][0].squeeze().tolist()
+    # print(labels)
     arguments, starting = [], False
     num_times = [(k, len(list(v))) for k, v in itertools.groupby(labels)]
 

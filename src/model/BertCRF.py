@@ -4,7 +4,7 @@ import torch.nn as nn
 from transformers import BertModel,BertPreTrainedModel
 from torch.nn import CrossEntropyLoss
 from src.model.crf import CRF
-
+from src.util.utils import seq_len_to_mask
 
 class BertCrfForNer(BertPreTrainedModel):
     def __init__(self, config):
@@ -12,8 +12,7 @@ class BertCrfForNer(BertPreTrainedModel):
         self.bert = BertModel(config)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
-        self.crf = CRF(tagset_size=config.num_labels,
-                       tag_dictionary=config.label2id, is_bert=True)
+        self.crf = CRF(config.num_labels,batch_first=True)
         self.init_weights()
 
     def forward(self, input_ids, attention_mask=None, token_type_ids=None,
@@ -28,7 +27,9 @@ class BertCrfForNer(BertPreTrainedModel):
         logits = self.classifier(sequence_output)
         outputs = (logits,)
         if labels is not None:
-            loss = self.crf.calculate_loss(
-                logits, tag_list=labels, lengths=input_lens)
+            mask = seq_len_to_mask(torch.tensor(input_lens, device=labels.device))
+            loss = self.crf(logits, labels, mask, reduction = 'mean')
             outputs = (loss,)+outputs
+        else:
+            outputs = (self.crf.decode(logits),) + outputs
         return outputs  # (loss), scores

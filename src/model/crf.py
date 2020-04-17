@@ -89,7 +89,8 @@ class CRF(torch.nn.Module):
         # shape: (batch_size,)
         denominator = self._compute_normalizer(emissions, mask)
         # shape: (batch_size,)
-        llh = numerator - denominator
+
+        llh = denominator - numerator
 
         if reduction == 'none':
             return llh
