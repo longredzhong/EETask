@@ -15,13 +15,15 @@ def get_data_info(event_schema_path):
         for l in f:
             l = json.loads(l)
             for role in l['role_list']:
-                key = (l['event_type'], role['role'])
-                id2label[n] = key
-                label2id[key] = n
-                n += 1
+                key = role['role']
+                if key in label2id:
+                    pass
+                else:
+                    id2label[n] = key
+                    label2id[key] = n
+                    n += 1
 
         num_labels = len(id2label)
-
     return num_labels, id2label, label2id
 
 
@@ -29,7 +31,7 @@ class EETaskDataset(Dataset):
     def __init__(self, path, fields, tokenizer, label2id):
         examples = []
         data = load_data(path)
-        for (text, arguments) in data:
+        for (text, event_type, arguments) in data:
             input_ids, token_type_ids = tokenizer.encode(
                 text, max_length=max_length)
 

@@ -1,18 +1,20 @@
 import json
 import numpy as np
 import torch
+
+
 def load_data(filepath):
     D = []
-    with open(filepath,encoding="UTF-8") as f:
+    with open(filepath, encoding="UTF-8") as f:
         for l in f:
             l = json.loads(l)
             arguments = {}
             for event in l['event_list']:
                 for argument in event['arguments']:
                     key = argument['argument']
-                    value = (event['event_type'], argument['role'])
+                    value = argument['role']
                     arguments[key] = value
-            D.append((l['text'], arguments))
+                D.append((l['text'], l['event_type'], arguments))
     return D
 
 def sequence_padding(inputs, length=None, padding=0):
@@ -30,4 +32,3 @@ def sequence_padding(inputs, length=None, padding=0):
         outputs.append(x)
 
     return torch.tensor(outputs,dtype=torch.long)
-
