@@ -11,42 +11,25 @@ from src.dataloader.Dataset import get_data_info
 #%%
 data = load_data("/home/longred/EETask/data/train.json")
 #%%
-tokenizer = Tokenizer(
-    "/home/longred/EETask/prev_trained_model/albert_tiny_zh/vocab.txt")
-num_labels, id2label, label2id = get_data_info(
-    "/home/longred/EETask/data/event_schema.json")
+max_len = 0
+len_text = []
+for text,au in data:
+    len_text.append(len(text))
 #%%
-text,arguments = data[1]
-#%%
+max_len
 
-input_ids, token_type_ids = tokenizer.encode(
-    text, max_length=512)
-seq_len = len(input_ids)
-labels = [0] * seq_len
-# labels[0] = label2id["[CLS]"]
-# labels[-1] = label2id["[SEP]"]
-attention_mask = [1]*seq_len
-for argument in arguments.items():
-    a_token_ids = tokenizer.encode(argument[0])[0][1:-1]
-    start_index = search(a_token_ids, input_ids)
-    if start_index != -1:
-        labels[start_index] = label2id[argument[1]]
-        for i in range(1, len(a_token_ids)):
-            labels[start_index + i] = label2id[argument[1]]
-
-#%%
-text
-#%%
-labels
 
 # %%
-arguments
+max(len_text)
 
 # %%
-len(label2id)
+sum(len_text)/len(len_text)
 
 # %%
-token_type_ids
+import matplotlib.pyplot as plt
+
+# %%
+plt.hist(len_text)
 
 
 # %%

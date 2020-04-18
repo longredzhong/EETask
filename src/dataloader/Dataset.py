@@ -4,7 +4,7 @@ from src.util.utils import search
 import json
 from src.util.tokenizers import Tokenizer
 
-max_length = 128
+max_length = 168
 
 
 def get_data_info(event_schema_path):

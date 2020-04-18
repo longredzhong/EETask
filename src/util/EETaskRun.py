@@ -35,9 +35,9 @@ class Run:
             loss.backward()
             # print(loss)
             # Gradient clipping is not in AdamW anymore (so you can use amp without issue)
-            torch.nn.utils.clip_grad_norm_(self.net.parameters(), 1)
+            torch.nn.utils.clip_grad_norm_(self.net.parameters(), 1.0)
             self.optim.step()
-            self.scheduler.step()
+            # self.scheduler.step()
             loader.set_postfix(loss=loss.item())
 
     def evaluate(self):

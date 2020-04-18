@@ -19,7 +19,7 @@ from src.util.utils import lcs
 #%%
 config = BertConfig.from_pretrained(
     r"/home/longred/lic2020_baselines/chinese_L-12_H-768_A-12/bert-base-chinese-config.json")
-config.pretrained_path = r"/home/longred/EETask/data/BertCRFForNer_small.bin"
+config.pretrained_path = r"/home/longred/lic2020_baselines/chinese_L-12_H-768_A-12/bert-base-chinese-pytorch_model.bin"
 config.vocab_path = r"/home/longred/lic2020_baselines/chinese_L-12_H-768_A-12/vocab.txt"
 config.train_data_path = r"/home/longred/EETask/data/train.json"
 config.batch_size = 32
@@ -44,12 +44,12 @@ num_warmup_steps = 100
 warmup_proportion = float(num_warmup_steps) / float(num_training_steps)  # 0.1
 # optimizer = AdamW(model.parameters(), lr=lr, correct_bias=False)
 optimizer = AdamW([
-    {'params': model.bert.parameters(),'lr':0.00001},
-    {'params': model.classifier.parameters(),'lr':0.0001},
+    {'params': model.bert.parameters(), 'lr': 2e-5},
+    {'params': model.classifier.parameters(),'lr':5e-4},
     {'params': model.crf.parameters(), 'lr': 0.001}
     ],lr=lr,correct_bias=False)
-scheduler = get_linear_schedule_with_warmup(
-    optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps)  # PyTorch scheduler
+# scheduler = get_linear_schedule_with_warmup(
+#     optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps)  # PyTorch scheduler
 #%%
 r = Run()
 r.device = device
@@ -59,7 +59,7 @@ r.id2label = EE.id2label
 r.label2id = EE.label2id
 r.net = model
 r.optim = optimizer
-r.scheduler = scheduler
+# r.scheduler = scheduler
 r.tokenizer = EE.tokenizer
 r.train_loader = EE.get_train_data_loader()
 #%%
@@ -69,8 +69,8 @@ r.train_loader = EE.get_train_data_loader()
 #%%
 
 #%%
-
-best = 0
+t = r.evaluate()
+best = t[0]+t[1] + t[2]
 e_t = 0
 while (True):
     r.train()
@@ -79,10 +79,10 @@ while (True):
         best = t[0]+t[1] +t[2]
         e_t = 0
         torch.save(r.net.state_dict(),
-                   "/home/longred/EETask/data/BertSoftMaxForNer_small.bin")
+                   "/home/longred/EETask/data/BertSoftMaxForNer_small_v2.bin")
         r.predict_to_file("/home/longred/EETask/data/test1.json",
                           "/home/longred/EETask/data/pred.json")
-        print("save model sum={1},f1:{2},精确度：{3},recall:{4}".format(best,t[0],t[1],t[2]))
+        print("save model sum={0},f1:{1},精确度：{2},recall:{3}".format(best,t[0],t[1],t[2]))
     e_t += 1
     if e_t>10:
         break
